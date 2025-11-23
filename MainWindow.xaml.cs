@@ -37,7 +37,6 @@ namespace MyMusicManager
 
         private void BtnStats_Click(object sender, RoutedEventArgs e)
         {
-            // On ouvre la fenêtre des graphiques
             StatsWindow stats = new StatsWindow();
             stats.ShowDialog();
         }
@@ -46,28 +45,22 @@ namespace MyMusicManager
         {
             try
             {
-                // 1. Création du document
                 PdfDocument document = new PdfDocument();
                 document.Info.Title = "Ma Collection Musicale";
 
                 PdfPage page = document.AddPage();
                 XGraphics gfx = XGraphics.FromPdfPage(page);
 
-                // --- POLICES (Version 1.50 compatible) ---
                 XFont fontTitre = new XFont("Arial", 24, XFontStyle.Bold);
                 XFont fontNormal = new XFont("Arial", 12, XFontStyle.Regular);
                 XFont fontGras = new XFont("Arial", 12, XFontStyle.Bold);
                 
-                // --- COULEURS URBAINES ---
-                // On remplace le Bleu par du Violet et du Noir pour rester lisible mais stylé
                 XBrush brushTitre = XBrushes.Purple; 
                 XBrush brushPrix = XBrushes.DarkMagenta; 
 
-                // TITRE
                 gfx.DrawString("MY MUSIC MANAGER", fontTitre, brushTitre,
                     new XRect(0, 30, page.Width, page.Height), XStringFormats.TopCenter);
                 
-                // SOUS-TITRE
                 gfx.DrawString("Catalogue Officiel", fontNormal, XBrushes.Gray,
                     new XRect(0, 60, page.Width, page.Height), XStringFormats.TopCenter);
 
@@ -77,42 +70,65 @@ namespace MyMusicManager
                 {
                     var albums = context.Albums.Include(a => a.Artiste).ToList();
 
-                    // EN-TÊTES DU TABLEAU
                     gfx.DrawString("ALBUM", fontGras, XBrushes.Black, 40, y);
                     gfx.DrawString("ARTISTE", fontGras, XBrushes.Black, 250, y);
                     gfx.DrawString("PRIX", fontGras, XBrushes.Black, 450, y);
                     
-                    // Ligne de séparation Violette
                     XPen penLigne = new XPen(XColors.Purple, 1);
                     gfx.DrawLine(penLigne, 40, y + 5, page.Width - 40, y + 5);
                     y += 30;
 
-                    // LISTING DES ALBUMS
                     foreach (var album in albums)
                     {
-                        // Titre
                         gfx.DrawString(album.Titre, fontNormal, XBrushes.Black, 40, y);
-
-                        // Artiste
                         string nomArtiste = album.Artiste != null ? album.Artiste.Nom : "Inconnu";
                         gfx.DrawString(nomArtiste, fontNormal, XBrushes.DarkSlateGray, 250, y);
-
-                        // Prix (En couleur pour ressortir)
                         gfx.DrawString(album.Prix + " €", fontGras, brushPrix, 450, y);
-
                         y += 25;
                     }
                 }
 
                 string filename = "MaCollection.pdf";
                 document.Save(filename);
-
-                // Ouverture du PDF
                 Process.Start(new ProcessStartInfo(filename) { UseShellExecute = true });
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Erreur PDF : " + ex.Message);
+            }
+        }
+
+        // --- NOUVELLE FONCTION POUR SUPPRIMER ---
+        private void BtnDelete_Click(object sender, RoutedEventArgs e)
+        {
+            // 1. Récupérer l'album de la ligne cliquée
+            var albumToDelete = ((FrameworkElement)sender).DataContext as Album;
+
+            if (albumToDelete == null) return;
+
+            // 2. Demander confirmation
+            var result = MessageBox.Show($"Supprimer '{albumToDelete.Titre}' ?", 
+                                         "Confirmation", 
+                                         MessageBoxButton.YesNo, 
+                                         MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                try 
+                {
+                    using (var context = new AppDbContext())
+                    {
+                        // 3. Suppression en base
+                        context.Albums.Remove(albumToDelete);
+                        context.SaveChanges();
+                    }
+                    // 4. Mise à jour de l'affichage
+                    ChargerAlbums();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Impossible de supprimer : " + ex.Message);
+                }
             }
         }
     }

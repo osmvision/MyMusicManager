@@ -16,6 +16,7 @@ namespace MyMusicManager
             string user = txtUsername.Text;
             string pass = txtPassword.Password;
             
+            
             // Configuration pour Wamp (root / root / mymusicmanager)
             string connectionString = "server=localhost;user=root;password=root;database=mymusicmanager;SslMode=None";
 
