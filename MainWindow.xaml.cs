@@ -37,9 +37,10 @@ namespace MyMusicManager
 
         private void BtnStats_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Fonctionnalité bonus.");
+            // On ouvre la fenêtre des graphiques
+            StatsWindow stats = new StatsWindow();
+            stats.ShowDialog();
         }
-
         private void BtnExport_Click(object sender, RoutedEventArgs e)
         {
             try
