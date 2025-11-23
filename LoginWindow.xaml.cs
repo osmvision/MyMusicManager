@@ -8,7 +8,7 @@ namespace MyMusicManager
     {
         public LoginWindow()
         {
-            InitializeComponent(); // INDISPENSABLE : Charge le visuel
+            InitializeComponent(); // C'est ici que le lien avec le XAML se fait
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -16,17 +16,16 @@ namespace MyMusicManager
             string user = txtUsername.Text;
             string pass = txtPassword.Password;
             
-            // Connexion à Wamp (root / pas de mot de passe)
-            // On ajoute SslMode=None à la fin
-            // Correction : database=mymusicmanager (tout attaché) et password=root
-                    string connectionString = "server=localhost;user=root;password=root;database=mymusicmanager;SslMode=None";
+            // Configuration pour Wamp (root / root / mymusicmanager)
+            string connectionString = "server=localhost;user=root;password=root;database=mymusicmanager;SslMode=None";
 
             try
             {
                 using (MySqlConnection conn = new MySqlConnection(connectionString))
                 {
                     conn.Open();
-                    // Requête SQL Pure (Critère LOTJ)
+                    
+                    // Requête SQL Pure (Validation du critère LOTJ)
                     string sql = "SELECT COUNT(*) FROM Utilisateurs WHERE Identifiant = @u AND MotDePasse = @p";
                     
                     using (MySqlCommand cmd = new MySqlCommand(sql, conn))

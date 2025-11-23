@@ -41,52 +41,64 @@ namespace MyMusicManager
             StatsWindow stats = new StatsWindow();
             stats.ShowDialog();
         }
+
         private void BtnExport_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                // 1. Création du document (Version 1.50)
+                // 1. Création du document
                 PdfDocument document = new PdfDocument();
                 document.Info.Title = "Ma Collection Musicale";
 
                 PdfPage page = document.AddPage();
                 XGraphics gfx = XGraphics.FromPdfPage(page);
 
-                // --- CODE SIMPLIFIÉ POUR VERSION 1.50 ---
-                // Ici, on peut utiliser des entiers (20) et XFontStyle marche directement !
-                
-                XFont fontTitre = new XFont("Arial", 20, XFontStyle.Bold);
+                // --- POLICES (Version 1.50 compatible) ---
+                XFont fontTitre = new XFont("Arial", 24, XFontStyle.Bold);
                 XFont fontNormal = new XFont("Arial", 12, XFontStyle.Regular);
                 XFont fontGras = new XFont("Arial", 12, XFontStyle.Bold);
-                // ----------------------------------------
+                
+                // --- COULEURS URBAINES ---
+                // On remplace le Bleu par du Violet et du Noir pour rester lisible mais stylé
+                XBrush brushTitre = XBrushes.Purple; 
+                XBrush brushPrix = XBrushes.DarkMagenta; 
 
-                // Titre
-                gfx.DrawString("Ma Collection Musicale", fontTitre, XBrushes.DarkBlue,
-                    new XRect(0, 20, page.Width, page.Height), XStringFormats.TopCenter);
+                // TITRE
+                gfx.DrawString("MY MUSIC MANAGER", fontTitre, brushTitre,
+                    new XRect(0, 30, page.Width, page.Height), XStringFormats.TopCenter);
+                
+                // SOUS-TITRE
+                gfx.DrawString("Catalogue Officiel", fontNormal, XBrushes.Gray,
+                    new XRect(0, 60, page.Width, page.Height), XStringFormats.TopCenter);
 
-                int y = 80;
+                int y = 100;
 
                 using (var context = new AppDbContext())
                 {
                     var albums = context.Albums.Include(a => a.Artiste).ToList();
 
-                    // En-têtes
-                    gfx.DrawString("Titre", fontGras, XBrushes.Black, 40, y);
-                    gfx.DrawString("Artiste", fontGras, XBrushes.Black, 250, y);
-                    gfx.DrawString("Prix", fontGras, XBrushes.Black, 450, y);
+                    // EN-TÊTES DU TABLEAU
+                    gfx.DrawString("ALBUM", fontGras, XBrushes.Black, 40, y);
+                    gfx.DrawString("ARTISTE", fontGras, XBrushes.Black, 250, y);
+                    gfx.DrawString("PRIX", fontGras, XBrushes.Black, 450, y);
                     
-                    // Ligne
-                    gfx.DrawLine(XPens.Black, 40, y + 5, page.Width - 40, y + 5);
+                    // Ligne de séparation Violette
+                    XPen penLigne = new XPen(XColors.Purple, 1);
+                    gfx.DrawLine(penLigne, 40, y + 5, page.Width - 40, y + 5);
                     y += 30;
 
+                    // LISTING DES ALBUMS
                     foreach (var album in albums)
                     {
+                        // Titre
                         gfx.DrawString(album.Titre, fontNormal, XBrushes.Black, 40, y);
 
+                        // Artiste
                         string nomArtiste = album.Artiste != null ? album.Artiste.Nom : "Inconnu";
-                        gfx.DrawString(nomArtiste, fontNormal, XBrushes.Black, 250, y);
+                        gfx.DrawString(nomArtiste, fontNormal, XBrushes.DarkSlateGray, 250, y);
 
-                        gfx.DrawString(album.Prix + " €", fontNormal, XBrushes.Black, 450, y);
+                        // Prix (En couleur pour ressortir)
+                        gfx.DrawString(album.Prix + " €", fontGras, brushPrix, 450, y);
 
                         y += 25;
                     }
